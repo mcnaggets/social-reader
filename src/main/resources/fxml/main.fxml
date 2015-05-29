@@ -60,7 +60,7 @@
                             <TableColumn fx:id="firstNameColumn" text="First Name"/>
                             <TableColumn fx:id="lastNameColumn" text="Last Name"/>
                             <TableColumn fx:id="title" text="Title"/>
-                            <TableColumn fx:id="currentEmployer" text="Currentmployer"/>
+                            <TableColumn fx:id="currentEmployer" text="Current Employer"/>
                             <TableColumn fx:id="location" text="Location"/>
                             <TableColumn fx:id="industry" text="Industry"/>
                         </columns>

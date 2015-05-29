@@ -3,6 +3,7 @@ package com.socialreader.ui;
 import com.socialreader.core.GooglePersonFinder;
 import com.socialreader.core.Profile;
 import com.socialreader.core.ProfileBuilder;
+import com.socialreader.input.DummyInputReader;
 import com.socialreader.input.InputReader;
 import com.socialreader.output.CsvOutputWriter;
 import javafx.beans.property.SimpleStringProperty;
@@ -105,6 +106,7 @@ public class MainController implements Initializable {
 
                 private ObservableList<Profile> getProfiles() throws InterruptedException {
                     final GooglePersonFinder finder = new GooglePersonFinder();
+//                    finder.configureSearch(new DummyInputReader());
                     finder.configureSearch(getInputReader());
 
                     profiles.clear();
@@ -127,6 +129,24 @@ public class MainController implements Initializable {
                     };
                     reader.setFirstName(firstName.getText());
                     reader.setLastName(lastName.getText());
+                    if (!jobTitles.getText().isEmpty()) {
+                        reader.getTitles().add(jobTitles.getText());
+                    }
+                    if (!companies.getText().isEmpty()) {
+                        reader.getCompanies().add(companies.getText());
+                    }
+                    if (!schools.getText().isEmpty()) {
+                        reader.getSchools().add(schools.getText());
+                    }
+                    if (!locations.getText().isEmpty()) {
+                        reader.getLocations().add(locations.getText());
+                    }
+                    if (!industries.getText().isEmpty()) {
+                        reader.getIndustries().add(industries.getText());
+                    }
+                    if (!keywords.getText().isEmpty()) {
+                        reader.getKeyWords().add(keywords.getText());
+                    }
                     return reader;
                 }
 

@@ -10,6 +10,7 @@ import java.net.URLEncoder;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -25,6 +26,7 @@ public class GooglePersonFinder {
     private InputReader inputReader;
 
     public void addTitles() {
+        searchQuery.insert(0, " ");
         searchQuery.insert(0, inputReader.getTitles().stream().map(this::mapTitle).collect(orJoining()));
     }
 
@@ -33,7 +35,7 @@ public class GooglePersonFinder {
     }
 
     private String mapTitle(String title) {
-        return "\"" + title + " * * Present\" ";
+        return "\"" + title + " * * Present\"";
     }
 
     public String getSearchQuery() {
@@ -49,18 +51,30 @@ public class GooglePersonFinder {
     }
 
     public void addLocations() {
-        addOrDelimitedList(inputReader.getLocations());
+        searchQuery.insert(0, " ");
+        searchQuery.insert(0, inputReader.getLocations().stream().map(mapLocation()).collect(orJoining()));
+    }
+
+    private Function<String, String> mapLocation() {
+        return v -> "\"location * " + v + "\"";
     }
 
     public void addIndustries() {
-        addOrDelimitedList(inputReader.getIndustries());
+        searchQuery.insert(0, " ");
+        searchQuery.insert(0, inputReader.getIndustries().stream().map(mapIndustry()).collect(orJoining()));
+    }
+
+    private Function<String, String> mapIndustry() {
+        return i -> "\"industry * " + i + "\"";
     }
 
     public void addKeyWords() {
+        searchQuery.insert(0, " ");
         searchQuery.insert(0, inputReader.getKeyWords().stream().collect(Collectors.joining(" ")));
     }
 
     private void addOrDelimitedList(List<String> valuesList) {
+        searchQuery.insert(0, " ");
         searchQuery.insert(0, valuesList.stream().map(v -> "\"" + v + "\"").collect(orJoining()));
     }
 
