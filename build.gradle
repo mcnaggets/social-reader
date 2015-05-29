@@ -1,0 +1,26 @@
+group 'com.socialreader'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply from: 'javafx.plugin'
+
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+
+    compile 'com.google.code.gson:gson:2.3.1'
+    compile 'org.jsoup:jsoup:1.8.2'
+    compile 'com.github.lite2073:email-validator:1.0'
+
+}
+
+javafx {
+    mainClass = 'com.socialreader.ui.JavaFXApplication'
+    systemProperties = ['prism.disableRegionCaching': 'true']
+}
