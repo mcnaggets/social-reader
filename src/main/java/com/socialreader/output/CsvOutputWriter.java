@@ -3,6 +3,7 @@ package com.socialreader.output;
 import com.socialreader.core.Profile;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -22,7 +23,7 @@ public class CsvOutputWriter implements OutputWriter{
         }
     }
     
-    public void writeProfileInformation(Set<Profile> profiles){
+    public void writeProfileInformation(Collection<Profile> profiles){
         printWriter.println(Profile.getHeader());
         for(Profile profile: profiles){
             printWriter.println(profile.toString());

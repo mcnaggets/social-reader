@@ -1,9 +1,25 @@
-VBox {
+.padding10 {
+    -fx-padding: 10;
+}
+
+FlowPane {
     -fx-spacing: 10;
-    -fx-padding: 5 5 5 5;
+}
+
+VBox {
+    -fx-padding: 5;
+    -fx-spacing: 10;
 }
 
 HBox {
-    -fx-spacing: 10;
-    -fx-padding: 5 5 5 5;
+    -fx-padding: 5;
+    -fx-alignment: center;
+}
+
+Label {
+    -fx-pref-width: 70;
+}
+
+Button {
+    -fx-pref-width: 80;
 }

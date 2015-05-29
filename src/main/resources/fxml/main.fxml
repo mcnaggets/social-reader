@@ -1,17 +1,72 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import java.lang.String?>
 <AnchorPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.socialreader.ui.MainController">
     <children>
-        <StackPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-                   AnchorPane.topAnchor="0.0">
+        <StackPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                   AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
-                <VBox>
-                    <children>
-                    </children>
+                <VBox AnchorPane.bottomAnchor="0.0"
+                      AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <HBox>
+                        <FlowPane alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                            <HBox>
+                                <Label text="First Name:" prefWidth="100"/>
+                                <TextField fx:id="firstName"/>
+                            </HBox>
+                            <HBox>
+                                <Label text="Last Name:"/>
+                                <TextField fx:id="lastName"/>
+                            </HBox>
+                            <HBox>
+                                <Label text="Job Titles:"/>
+                                <TextField fx:id="jobTitles"/>
+                            </HBox>
+                            <HBox>
+                                <Label text="Companies:"/>
+                                <TextField fx:id="companies"/>
+                            </HBox>
+                            <HBox>
+                                <Label text="Schools:"/>
+                                <TextField fx:id="schools"/>
+                            </HBox>
+                            <HBox>
+                                <Label text="Locations:"/>
+                                <TextField fx:id="locations"/>
+                            </HBox>
+                            <HBox>
+                                <Label text="Industries:"/>
+                                <TextField fx:id="industries"/>
+                            </HBox>
+                            <HBox>
+                                <Label text="Keywords:"/>
+                                <TextField fx:id="keywords"/>
+                            </HBox>
+                        </FlowPane>
+                        <VBox alignment="TOP_RIGHT">
+                            <Button onAction="#search" text="Search"/>
+                            <Button onAction="#export" text="CSV Export"/>
+                        </VBox>
+                    </HBox>
+
+                    <TableView fx:id="peopleTable" VBox.vgrow="ALWAYS">
+                        <columnResizePolicy>
+                            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                        </columnResizePolicy>
+                        <columns>
+                            <TableColumn fx:id="firstNameColumn" text="First Name"/>
+                            <TableColumn fx:id="lastNameColumn" text="Last Name"/>
+                            <TableColumn fx:id="title" text="Title"/>
+                            <TableColumn fx:id="currentEmployer" text="Currentmployer"/>
+                            <TableColumn fx:id="location" text="Location"/>
+                            <TableColumn fx:id="industry" text="Industry"/>
+                        </columns>
+                    </TableView>
                 </VBox>
+                <ProgressIndicator fx:id="progressIndicator" progress="-1"/>
             </children>
         </StackPane>
     </children>
