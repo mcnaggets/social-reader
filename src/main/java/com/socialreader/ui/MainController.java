@@ -3,7 +3,6 @@ package com.socialreader.ui;
 import com.socialreader.core.GooglePersonFinder;
 import com.socialreader.core.Profile;
 import com.socialreader.core.ProfileBuilder;
-import com.socialreader.input.DummyInputReader;
 import com.socialreader.input.InputReader;
 import com.socialreader.output.CsvOutputWriter;
 import javafx.beans.property.SimpleStringProperty;
@@ -21,15 +20,19 @@ import javafx.stage.FileChooser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
 import java.io.File;
-import java.net.URL;
+import java.io.UnsupportedEncodingException;
+import java.net.*;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainController implements Initializable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MainController.class);
+    public static final String GOOGLE_SEARCH_TEMPLATE = "http://www.google.com/search?gws_rd=cr&as_qdr=all&q=%s";
 
     private final GetProfilesService service = new GetProfilesService();
     private final AtomicBoolean doRefreshData = new AtomicBoolean(true);
@@ -46,6 +49,7 @@ public class MainController implements Initializable {
     public TableView<Profile> peopleTable;
     public TableColumn<Profile, String> firstNameColumn;
     public TableColumn<Profile, String> lastNameColumn;
+    public TableColumn<Profile, String> linkedIn;
     public TableColumn<Profile, String> title;
     public TableColumn<Profile, String> currentEmployer;
     public TableColumn<Profile, String> location;
@@ -66,6 +70,7 @@ public class MainController implements Initializable {
         firstNameColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getFirstName()));
         lastNameColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getLastName()));
         title.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getTitle()));
+        linkedIn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getLinkedInUrl()));
         currentEmployer.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getCurrentEmployer()));
         location.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getLocation()));
         industry.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getIndustry()));
@@ -92,6 +97,12 @@ public class MainController implements Initializable {
         progressIndicator.visibleProperty().bind(service.runningProperty());
         peopleTable.itemsProperty().bind(service.valueProperty());
         service.setOnRunning(e -> peopleTable.setPlaceholder(new Text("\n\nSearching...")));
+    }
+
+    public void google() throws URISyntaxException, MalformedURLException, UnsupportedEncodingException {
+        final GooglePersonFinder finder = new GooglePersonFinder();
+        finder.configureSearch(getInputReader());
+        openWebPage(new URI(String.format(GOOGLE_SEARCH_TEMPLATE, URLEncoder.encode(finder.getSearchQuery(), "UTF-8"))));
     }
 
     private class GetProfilesService extends Service<ObservableList<Profile>> {
@@ -124,32 +135,6 @@ public class MainController implements Initializable {
                     return FXCollections.observableList(profiles);
                 }
 
-                private InputReader getInputReader() {
-                    final InputReader reader = new InputReader() {
-                    };
-                    reader.setFirstName(firstName.getText());
-                    reader.setLastName(lastName.getText());
-                    if (!jobTitles.getText().isEmpty()) {
-                        reader.getTitles().add(jobTitles.getText());
-                    }
-                    if (!companies.getText().isEmpty()) {
-                        reader.getCompanies().add(companies.getText());
-                    }
-                    if (!schools.getText().isEmpty()) {
-                        reader.getSchools().add(schools.getText());
-                    }
-                    if (!locations.getText().isEmpty()) {
-                        reader.getLocations().add(locations.getText());
-                    }
-                    if (!industries.getText().isEmpty()) {
-                        reader.getIndustries().add(industries.getText());
-                    }
-                    if (!keywords.getText().isEmpty()) {
-                        reader.getKeyWords().add(keywords.getText());
-                    }
-                    return reader;
-                }
-
                 private Optional<Profile> processProfile(ProfileBuilder profileBuilder) {
                     try {
                         profileBuilder.initWebsiteScrapers();
@@ -164,6 +149,43 @@ public class MainController implements Initializable {
                 }
 
             };
+        }
+    }
+
+    private InputReader getInputReader() {
+        final InputReader reader = new InputReader() {
+        };
+//        reader.setFirstName(firstName.getText());
+//        reader.setLastName(lastName.getText());
+//        if (!companies.getText().isEmpty()) {
+//            reader.getCompanies().add(companies.getText());
+//        }
+//        if (!schools.getText().isEmpty()) {
+//            reader.getSchools().add(schools.getText());
+//        }
+        if (!jobTitles.getText().isEmpty()) {
+            reader.getTitles().add(jobTitles.getText());
+        }
+        if (!locations.getText().isEmpty()) {
+            reader.getLocations().add(locations.getText());
+        }
+        if (!industries.getText().isEmpty()) {
+            reader.getIndustries().add(industries.getText());
+        }
+        if (!keywords.getText().isEmpty()) {
+            reader.getKeyWords().add(keywords.getText());
+        }
+        return reader;
+    }
+
+    public static void openWebPage(URI uri) {
+        Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+        if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
+            try {
+                desktop.browse(uri);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 

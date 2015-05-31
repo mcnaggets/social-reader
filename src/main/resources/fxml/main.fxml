@@ -13,26 +13,26 @@
                       AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <HBox>
                         <FlowPane alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
-                            <HBox>
-                                <Label text="First Name:" prefWidth="100"/>
-                                <TextField fx:id="firstName"/>
-                            </HBox>
-                            <HBox>
-                                <Label text="Last Name:"/>
-                                <TextField fx:id="lastName"/>
-                            </HBox>
+                            <!--<HBox>-->
+                                <!--<Label text="First Name:"/>-->
+                                <!--<TextField fx:id="firstName"/>-->
+                            <!--</HBox>-->
+                            <!--<HBox>-->
+                                <!--<Label text="Last Name:"/>-->
+                                <!--<TextField fx:id="lastName"/>-->
+                            <!--</HBox>-->
                             <HBox>
                                 <Label text="Job Titles:"/>
                                 <TextField fx:id="jobTitles"/>
                             </HBox>
-                            <HBox>
+                            <!--<HBox>
                                 <Label text="Companies:"/>
                                 <TextField fx:id="companies"/>
                             </HBox>
                             <HBox>
                                 <Label text="Schools:"/>
                                 <TextField fx:id="schools"/>
-                            </HBox>
+                            </HBox>-->
                             <HBox>
                                 <Label text="Locations:"/>
                                 <TextField fx:id="locations"/>
@@ -48,6 +48,7 @@
                         </FlowPane>
                         <VBox alignment="TOP_RIGHT">
                             <Button onAction="#search" text="Search"/>
+                            <Button onAction="#google" text="Google"/>
                             <Button onAction="#export" text="CSV Export"/>
                         </VBox>
                     </HBox>
@@ -59,6 +60,7 @@
                         <columns>
                             <TableColumn fx:id="firstNameColumn" text="First Name"/>
                             <TableColumn fx:id="lastNameColumn" text="Last Name"/>
+                            <TableColumn fx:id="linkedIn" text="LinkedIn Public Url"/>
                             <TableColumn fx:id="title" text="Title"/>
                             <TableColumn fx:id="currentEmployer" text="Current Employer"/>
                             <TableColumn fx:id="location" text="Location"/>

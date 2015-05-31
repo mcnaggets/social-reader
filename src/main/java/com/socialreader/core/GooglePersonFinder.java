@@ -2,15 +2,19 @@ package com.socialreader.core;
 
 import com.google.gson.Gson;
 import com.socialreader.input.InputReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.InetAddress;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -19,8 +23,13 @@ import java.util.stream.Collectors;
  */
 public class GooglePersonFinder {
 
-    private static final int MAX_RESULTS = 48;
-    private static final String SEARCH_QUERY = "site:linkedin.com/in/ OR site:linkedin.com/pub/ -site:linkedin.com/pub/dir/";
+    public static final int SEARCH_PAGE_SIZE = 3; // 1..8
+    public static final int SEARCH_PAGES = 6;
+    public static final int MAX_RESULTS = SEARCH_PAGES * SEARCH_PAGE_SIZE;
+
+    public static final String SEARCH_QUERY = "site:linkedin.com/in/ OR site:linkedin.com/pub/ -site:linkedin.com/pub/dir/";
+    private static final Logger LOGGER = LoggerFactory.getLogger(GooglePersonFinder.class);
+    public static final String GOOGLE_SEARCH_QUERY = "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&rsz=%s&start=%s&q=";
 
     private StringBuilder searchQuery = new StringBuilder();
     private InputReader inputReader;
@@ -35,7 +44,7 @@ public class GooglePersonFinder {
     }
 
     private String mapTitle(String title) {
-        return "\"" + title + " * * Present\"";
+        return String.format("\"%s * * Present\"", title);
     }
 
     public String getSearchQuery() {
@@ -52,20 +61,20 @@ public class GooglePersonFinder {
 
     public void addLocations() {
         searchQuery.insert(0, " ");
-        searchQuery.insert(0, inputReader.getLocations().stream().map(mapLocation()).collect(orJoining()));
+        searchQuery.insert(0, inputReader.getLocations().stream().map(this::mapLocation).collect(orJoining()));
     }
 
-    private Function<String, String> mapLocation() {
-        return v -> "\"location * " + v + "\"";
+    private String mapLocation(String location) {
+        return String.format("\"Location * %s\"", location);
     }
 
     public void addIndustries() {
         searchQuery.insert(0, " ");
-        searchQuery.insert(0, inputReader.getIndustries().stream().map(mapIndustry()).collect(orJoining()));
+        searchQuery.insert(0, inputReader.getIndustries().stream().map(this::mapIndustry).collect(orJoining()));
     }
 
-    private Function<String, String> mapIndustry() {
-        return i -> "\"industry * " + i + "\"";
+    private String mapIndustry(String i) {
+        return String.format("\"Industry * %s\"", i);
     }
 
     public void addKeyWords() {
@@ -90,6 +99,7 @@ public class GooglePersonFinder {
             searchQuery.insert(0, " ");
             searchQuery.insert(0, inputReader.getLastName());
         }
+        LOGGER.debug("Google search query: {}", searchQuery);
     }
 
     private void configureSearch() {
@@ -105,11 +115,10 @@ public class GooglePersonFinder {
     private Set<ProfileBuilder> doGoogleSearch() {
         Set<ProfileBuilder> profileBuilders = new HashSet<ProfileBuilder>();
         try {
-            for (int resultIndex = 0; resultIndex < MAX_RESULTS; resultIndex += 8) {
-                String searchAddress = "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&rsz=8&start=" + resultIndex + "&q=";
-                String charset = "UTF-8";
-                URL url = new URL(searchAddress + URLEncoder.encode(getSearchQuery(), charset));
-                Reader reader = new InputStreamReader(url.openStream(), charset);
+            for (int resultIndex = 0; resultIndex < MAX_RESULTS; resultIndex += SEARCH_PAGE_SIZE) {
+                String searchAddress = String.format(GOOGLE_SEARCH_QUERY, SEARCH_PAGE_SIZE, resultIndex);
+                URL url = new URL(searchAddress + URLEncoder.encode(getSearchQuery(), "UTF-8"));
+                Reader reader = new InputStreamReader(url.openStream(), "UTF-8");
                 GoogleResults googleResults = new Gson().fromJson(reader, GoogleResults.class);
                 GoogleResults.ResponseData responseData = googleResults.getResponseData();
                 if (responseData != null) {
@@ -124,10 +133,61 @@ public class GooglePersonFinder {
                     }
                 }
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (Exception x) {
+            LOGGER.error("Error while searching in google", x);
         }
         return profileBuilders;
+    }
+
+    private Set<String> getDataFromGoogle(String query) {
+
+        Set<String> result = new HashSet<String>();
+        String request = "https://www.google.com/search?q=" + query + "&num=20";
+        System.out.println("Sending request..." + request);
+
+        try {
+
+            // need http protocol, set this as a Google bot agent :)
+            Document doc = Jsoup
+                    .connect(request)
+                    .userAgent(
+                            "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)")
+                    .timeout(5000).get();
+
+            // get all links
+            Elements links = doc.select("a[href]");
+            for (Element link : links) {
+
+                String temp = link.attr("href");
+                if(temp.startsWith("/url?q=")){
+                    //use regex to get domain name
+                    result.add(getDomainName(temp));
+                }
+
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
+    public static void main(String[] args) throws Exception {
+
+        URL url = new URL("http://ajax.googleapis.com/ajax/services/search/web?v=1.0&rsz=8&start=0" +
+                "&q=%22Director+*+*+Present%22+%22Industry+*+Design%22+%22Location+*+Hong+Kong%22+site%3Alinkedin.com%2Fin%2F+OR+site%3Alinkedin.com%2Fpub%2F+-site%3Alinkedin.com%2Fpub%2Fdir%2F" +
+                "&userip=" + InetAddress.getLocalHost());
+        URLConnection connection = url.openConnection();
+        connection.addRequestProperty("Referer", "http://linkedin.com");
+
+        String line;
+        StringBuilder builder = new StringBuilder();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        while((line = reader.readLine()) != null) {
+            builder.append(line);
+        }
+        System.out.println(builder);
     }
 }
 

@@ -29,8 +29,11 @@ public class ProfileBuilder {
     private void initPiplScraper() {
         Profile linkedInProfile = linkedInScraper.generateProfile();
         piplScraper = new PiplScraper(linkedInProfile);
-        piplScraper.getHtml(piplScraper.getPiplProfileUrl());
-        piplScraper.parseHtml();
+        String profileUrl = piplScraper.getPiplProfileUrl();
+        if (!profileUrl.isEmpty()) {
+            piplScraper.getHtml(profileUrl);
+            piplScraper.parseHtml();
+        }
     }
 
     private void initLinkedInScraper() {
