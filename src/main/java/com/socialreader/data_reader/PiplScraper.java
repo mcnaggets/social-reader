@@ -4,11 +4,11 @@ import com.socialreader.core.Profile;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.util.ArrayList;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
+
+import static java.net.URLEncoder.encode;
 
 /**
  * @author Brad
@@ -59,13 +59,16 @@ public class PiplScraper extends WebsiteScraper {
         }
     }
 
-    public String getPiplProfileUrl() {
+    public String getPiplProfileUrl() throws UnsupportedEncodingException {
         return doPiplSearchForPerson();
     }
 
-    private String doPiplSearchForPerson() {
-        String searchUrl = String.format(PIPL_SEARCH_URL, profile.getFirstName(), profile.getLastName(), profile.getLocation());
-        getHtml(searchUrl);
+    private String doPiplSearchForPerson() throws UnsupportedEncodingException {
+        String searchUrl = String.format(PIPL_SEARCH_URL,
+                encode(profile.getFirstName(), "UTF-8"),
+                encode(profile.getLastName(), "UTF-8"),
+                encode(profile.getLocation(), "UTF-8"));
+        initHtml(searchUrl);
         return getFirstProfileFromSearchResults();
     }
 
@@ -107,9 +110,9 @@ public class PiplScraper extends WebsiteScraper {
     }
 
     @Override
-    public void getHtml(String websiteUrl) {
+    public void initHtml(String websiteUrl) {
         this.piplUrl = websiteUrl;
-        super.getHtml(websiteUrl);
+        super.initHtml(websiteUrl);
     }
 
     @Override
@@ -123,7 +126,7 @@ public class PiplScraper extends WebsiteScraper {
         if (piplProfileUrl != null) {
             if (p.isProfileCorrectPerson(piplProfileUrl)) {
                 System.out.println("match for person");
-                p.getHtml(piplProfileUrl);
+                p.initHtml(piplProfileUrl);
                 p.parseHtml();
                 p.generateProfile();
             } else {

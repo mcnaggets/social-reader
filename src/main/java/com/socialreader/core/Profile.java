@@ -26,7 +26,6 @@ public class Profile {
     private String email1 = null;
     private String email2 = null;
     private String email3 = null;
-    private Map<SourceWebsite, String> sourceProfileLinks = null;
 
     public Profile() {
     }
@@ -99,10 +98,6 @@ public class Profile {
         return linkedInUrl;
     }
 
-    public Map<SourceWebsite, String> getSourceProfileLinks() {
-        return sourceProfileLinks;
-    }
-
     //public void setLinkedInUrl(String linkedInUrl) {this.linkedInUrl = linkedInUrl;}
     public void setFirstName(String firstName) {
         this.firstName = firstName;
@@ -170,10 +165,6 @@ public class Profile {
 
     public void setLinkedInUrl(String linkedInUrl) {
         this.linkedInUrl = linkedInUrl;
-    }
-
-    public void setSourceProfileLinks(Map<SourceWebsite, String> sourceProfileLinks) {
-        this.sourceProfileLinks = sourceProfileLinks;
     }
 
     public static String getHeader() {

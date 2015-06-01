@@ -6,8 +6,9 @@ import java.util.List;
 /**
  * @author Brad
  */
-public abstract class InputReader {
+public class InputReader {
 
+    private final int maxResults;
     protected String firstName = "";
     protected String lastName = "";
     protected List<String> titles = new LinkedList<>();
@@ -16,6 +17,10 @@ public abstract class InputReader {
     protected List<String> locations = new LinkedList<>();
     protected List<String> industries = new LinkedList<>();
     protected List<String> keyWords = new LinkedList<>();
+
+    public InputReader(int maxResults) {
+        this.maxResults = maxResults;
+    }
 
     public String getFirstName() {
         return firstName;
@@ -81,4 +86,7 @@ public abstract class InputReader {
         this.keyWords = keyWords;
     }
 
+    public int getMaxResults() {
+        return maxResults;
+    }
 }

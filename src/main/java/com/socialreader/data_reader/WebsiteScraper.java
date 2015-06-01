@@ -19,9 +19,10 @@ public abstract class WebsiteScraper {
 
     public abstract Profile generateProfile();
 
-    public void getHtml(String websiteUrl) {
+    public void initHtml(String websiteUrl) {
         try {
-            document = Jsoup.connect(websiteUrl).userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36").referrer("http://www.google.com").timeout(0).get();
+            document = Jsoup.connect(websiteUrl).timeout(3000).referrer("http://www.google.com")
+                    .userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36").get();
         } catch (Exception e) {
             LOGGER.error("Can't get html for {}", websiteUrl, e);
         }

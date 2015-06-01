@@ -1,8 +1,6 @@
 package com.socialreader.data_reader;
 
 import com.socialreader.core.Profile;
-import java.util.List;
-import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
@@ -155,7 +153,7 @@ public class LinkedInScraper extends WebsiteScraper{
     
     public static void main(String[] args) throws Exception{
         LinkedInScraper l = new LinkedInScraper("https://www.linkedin.com/pub/eric-conner/40/901/348");
-        l.getHtml(l.linkedInUrl);
+        l.initHtml(l.linkedInUrl);
         l.parseHtml();
         l.generateProfile();
         //System.out.println(l.document.html());

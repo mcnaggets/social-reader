@@ -2,6 +2,7 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.collections.*?>
 <?import java.lang.String?>
 <AnchorPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.socialreader.ui.MainController">
@@ -14,41 +15,54 @@
                     <HBox>
                         <VBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
                             <!--<HBox>-->
-                                <!--<Label text="First Name:"/>-->
-                                <!--<TextField fx:id="firstName"/>-->
+                            <!--<Label text="First Name:"/>-->
+                            <!--<TextField fx:id="firstName"/>-->
                             <!--</HBox>-->
                             <!--<HBox>-->
-                                <!--<Label text="Last Name:"/>-->
-                                <!--<TextField fx:id="lastName"/>-->
+                            <!--<Label text="Last Name:"/>-->
+                            <!--<TextField fx:id="lastName"/>-->
                             <!--</HBox>-->
                             <HBox>
-                                <Label text="Job Titles:"/>
+                                <Label prefWidth="70" text="Job Titles:"/>
                                 <TextField fx:id="jobTitles" HBox.hgrow="ALWAYS"/>
                             </HBox>
                             <!--<HBox>
-                                <Label text="Companies:"/>
+                                <Label prefWidth="70" text="Companies:"/>
                                 <TextField fx:id="companies"/>
                             </HBox>
                             <HBox>
-                                <Label text="Schools:"/>
+                                <Label prefWidth="70" text="Schools:"/>
                                 <TextField fx:id="schools"/>
                             </HBox>-->
                             <HBox>
-                                <Label text="Locations:"/>
+                                <Label prefWidth="70" text="Locations:"/>
                                 <TextField fx:id="locations" HBox.hgrow="ALWAYS"/>
                             </HBox>
                             <HBox>
-                                <Label text="Industries:"/>
+                                <Label prefWidth="70" text="Industries:"/>
                                 <TextField fx:id="industries" HBox.hgrow="ALWAYS"/>
                             </HBox>
                             <HBox>
-                                <Label text="Keywords:"/>
+                                <Label prefWidth="70" text="Keywords:"/>
                                 <TextField fx:id="keywords" HBox.hgrow="ALWAYS"/>
                             </HBox>
-                            <HBox spacing="10" alignment="TOP_RIGHT">
+                            <HBox spacing="10" alignment="CENTER">
                                 <Button onAction="#search" text="Search"/>
                                 <Button onAction="#google" text="Google"/>
                                 <Button onAction="#export" text="CSV Export"/>
+                                <Label text="Maximum search results:" prefWidth="140"/>
+                                <ComboBox fx:id="maxResults" promptText="choose" value="10">
+                                    <items>
+                                        <FXCollections fx:factory="observableArrayList">
+                                            <String fx:value="5"/>
+                                            <String fx:value="10"/>
+                                            <String fx:value="20"/>
+                                            <String fx:value="30"/>
+                                            <String fx:value="50"/>
+                                            <String fx:value="100"/>
+                                        </FXCollections>
+                                    </items>
+                                </ComboBox>
                             </HBox>
                         </VBox>
                     </HBox>

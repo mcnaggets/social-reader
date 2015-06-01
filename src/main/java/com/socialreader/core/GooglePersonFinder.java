@@ -2,29 +2,40 @@ package com.socialreader.core;
 
 import com.socialreader.input.InputReader;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
 import java.io.IOException;
-import java.net.URLEncoder;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+import static java.net.URLEncoder.encode;
+
 /**
  * @author Brad
  */
 public class GooglePersonFinder {
 
-    public static final String SEARCH_QUERY = "site:linkedin.com/in/ OR site:linkedin.com/pub/ -site:linkedin.com/pub/dir/";
     private static final Logger LOGGER = LoggerFactory.getLogger(GooglePersonFinder.class);
-    public static final int PEOPLE_TO_FIND = 50;
 
-    private StringBuilder searchQuery = new StringBuilder();
-    private InputReader inputReader;
+    public static final String SEARCH_QUERY = "site:linkedin.com/in/ OR site:linkedin.com/pub/ -site:linkedin.com/pub/dir/";
+    public static final String GOOGLE_SEARCH_TEMPLATE = "https://www.google.com/search?gws_rd=cr&as_qdr=all&q=%s&num=%s";
+
+    private final StringBuilder searchQuery = new StringBuilder();
+    private final InputReader inputReader;
+
+    public GooglePersonFinder(InputReader inputReader) {
+        this.inputReader = inputReader;
+        configureSearch(inputReader);
+    }
 
     public void addTitles() {
         searchQuery.insert(0, " ");
@@ -79,9 +90,8 @@ public class GooglePersonFinder {
         searchQuery.insert(0, valuesList.stream().map(v -> "\"" + v + "\"").collect(orJoining()));
     }
 
-    public void configureSearch(InputReader inputReader) {
+    private void configureSearch(InputReader inputReader) {
         this.searchQuery.append(SEARCH_QUERY);
-        this.inputReader = inputReader;
         configureSearch();
         if (!inputReader.getFirstName().isEmpty()) {
             searchQuery.insert(0, " ");
@@ -98,29 +108,50 @@ public class GooglePersonFinder {
         addLocations();
         addIndustries();
         addTitles();
+        addKeyWords();
     }
 
     public Set<ProfileBuilder> generateProfileBuilders() {
-        return getDataFromGoogle(getSearchQuery()).stream().map(ProfileBuilder::new).collect(Collectors.toSet());
+        return getDataFromGoogle().stream().map(ProfileBuilder::new).collect(Collectors.toSet());
     }
 
-    private Set<String> getDataFromGoogle(String query) {
+    private Set<String> getDataFromGoogle() {
         Set<String> result = new HashSet<>();
         try {
-            String request = String.format("https://www.google.com/search?q=%s&num=%s", URLEncoder.encode(query, "UTF-8"), PEOPLE_TO_FIND);
-            LOGGER.debug("Sending request..." + request);
+            String request = searchQuery();
+            LOGGER.debug("Sending request... {}", request);
             // need http protocol, set this as a Google bot agent :)
-            return Jsoup.connect(request)
+            final Document document = Jsoup.connect(request)
                     .userAgent("Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)")
-                    .timeout(10000).get().select("cite").stream().map(Element::html).collect(Collectors.toSet());
+                    .timeout(10000).get();
+            return document.select("cite").stream().map(Element::html).filter(c -> c.contains("linkedin")).collect(Collectors.toSet());
         } catch (IOException e) {
             LOGGER.error("Error while google", e);
         }
         return result;
     }
 
-    public static void main(String[] args) throws Exception {
-        new GooglePersonFinder().getDataFromGoogle("\"CEO * * Present\" OR \"President * * Present\" OR \"owner * * Present\" OR \"CFO * * Present\" \"Restaurants\" OR \"Food & Beverages\" \"Greater Los Angeles Area\" site:linkedin.com/in/ OR site:linkedin.com/pub/ -site:linkedin.com/pub/dir/").forEach(System.out::println);
+    private String searchQuery() {
+        try {
+            return String.format(GOOGLE_SEARCH_TEMPLATE, encode(getSearchQuery(), "UTF-8"), inputReader.getMaxResults());
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void openWebPage() {
+        openWebPage(searchQuery());
+    }
+
+    public static void openWebPage(String query) {
+        try {
+            Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+            if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
+                desktop.browse(new URI(query));
+            }
+        } catch (Exception e) {
+            LOGGER.error("Error while opening browser", e);
+        }
     }
 
 }

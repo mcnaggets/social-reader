@@ -4,6 +4,8 @@ import com.socialreader.data_reader.EmailResolver;
 import com.socialreader.data_reader.LinkedInScraper;
 import com.socialreader.data_reader.PiplScraper;
 
+import java.io.UnsupportedEncodingException;
+
 /**
  * @author Brad
  */
@@ -21,29 +23,30 @@ public class ProfileBuilder {
         this.linkedInUrl = linkedInUrl;
     }
 
-    public void initWebsiteScrapers() {
+    public void initWebsiteScrapers() throws UnsupportedEncodingException {
         initLinkedInScraper();
-        initPiplScraper();
+//        initPiplScraper();
     }
 
-    private void initPiplScraper() {
+    private void initPiplScraper() throws UnsupportedEncodingException {
         Profile linkedInProfile = linkedInScraper.generateProfile();
         piplScraper = new PiplScraper(linkedInProfile);
         String profileUrl = piplScraper.getPiplProfileUrl();
         if (!profileUrl.isEmpty()) {
-            piplScraper.getHtml(profileUrl);
+            piplScraper.initHtml(profileUrl);
             piplScraper.parseHtml();
         }
     }
 
     private void initLinkedInScraper() {
         linkedInScraper = new LinkedInScraper(linkedInUrl);
-        linkedInScraper.getHtml(linkedInUrl);
+        linkedInScraper.initHtml(linkedInUrl);
         linkedInScraper.parseHtml();
     }
 
     public void generateProfileFromWebsiteScrapers() {
-        profile = Profile.merge(linkedInScraper.generateProfile(), piplScraper.generateProfile());
+        profile = linkedInScraper.generateProfile();
+//        profile = Profile.merge(linkedInScraper.generateProfile(), piplScraper.generateProfile());
     }
 
     public void initEmailResolver() {

@@ -11,21 +11,19 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.fxml.Initializable;
-import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.*;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
-import java.net.*;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -34,11 +32,9 @@ import java.util.stream.Stream;
 public class MainController implements Initializable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MainController.class);
-    public static final String GOOGLE_SEARCH_TEMPLATE = "http://www.google.com/search?gws_rd=cr&as_qdr=all&q=%s";
 
     private final GetProfilesService service = new GetProfilesService();
     private final AtomicBoolean doRefreshData = new AtomicBoolean(true);
-
 
     public TextField firstName;
     public TextField lastName;
@@ -48,6 +44,7 @@ public class MainController implements Initializable {
     public TextField locations;
     public TextField industries;
     public TextField keywords;
+    public ComboBox<String> maxResults;
     public TableView<Profile> peopleTable;
     public TableColumn<Profile, String> firstNameColumn;
     public TableColumn<Profile, String> lastNameColumn;
@@ -65,6 +62,18 @@ public class MainController implements Initializable {
         LOGGER.debug("Controller initialing");
         bindService();
         initializeColumns();
+
+        peopleTable.setRowFactory(tv -> {
+            TableRow<Profile> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && (!row.isEmpty())) {
+                    Profile profile = row.getItem();
+                    GooglePersonFinder.openWebPage(profile.getLinkedInUrl());
+                }
+            });
+            return row;
+        });
+
         LOGGER.debug("Controller initialized");
     }
 
@@ -85,7 +94,7 @@ public class MainController implements Initializable {
     public void export() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Export data");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV File", "*.csv"));
+        fileChooser.getExtensionFilters().add(new ExtensionFilter("CSV File", "*.csv"));
         File file = fileChooser.showSaveDialog(null);
         if (file != null) {
             new CsvOutputWriter(file.getPath()).writeProfileInformation(profiles);
@@ -102,9 +111,8 @@ public class MainController implements Initializable {
     }
 
     public void google() throws URISyntaxException, MalformedURLException, UnsupportedEncodingException {
-        final GooglePersonFinder finder = new GooglePersonFinder();
-        finder.configureSearch(getInputReader());
-        openWebPage(new URI(String.format(GOOGLE_SEARCH_TEMPLATE, URLEncoder.encode(finder.getSearchQuery(), "UTF-8"))));
+        final GooglePersonFinder finder = new GooglePersonFinder(getInputReader());
+        finder.openWebPage();
     }
 
     private class GetProfilesService extends Service<ObservableList<Profile>> {
@@ -118,9 +126,7 @@ public class MainController implements Initializable {
                 }
 
                 private ObservableList<Profile> getProfiles() throws InterruptedException {
-                    final GooglePersonFinder finder = new GooglePersonFinder();
-//                    finder.configureSearch(new DummyInputReader());
-                    finder.configureSearch(getInputReader());
+                    final GooglePersonFinder finder = new GooglePersonFinder(getInputReader());
 
                     profiles.clear();
                     final Set<ProfileBuilder> builders = finder.generateProfileBuilders();
@@ -155,8 +161,7 @@ public class MainController implements Initializable {
     }
 
     private InputReader getInputReader() {
-        final InputReader reader = new InputReader() {
-        };
+        final InputReader reader = new InputReader(Integer.valueOf(maxResults.getValue()));
 //        reader.setFirstName(firstName.getText());
 //        reader.setLastName(lastName.getText());
 //        if (!companies.getText().isEmpty()) {
@@ -182,17 +187,6 @@ public class MainController implements Initializable {
 
     private Set<String> splitString(TextField multiValue) {
         return Stream.of(multiValue.getText().split(",")).map(String::trim).collect(Collectors.toSet());
-    }
-
-    public static void openWebPage(URI uri) {
-        Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
-        if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
-            try {
-                desktop.browse(uri);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
     }
 
 }

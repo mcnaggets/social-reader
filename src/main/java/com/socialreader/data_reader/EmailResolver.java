@@ -4,6 +4,9 @@ import com.dominicsayers.isemail.IsEMail;
 import com.dominicsayers.isemail.dns.DNSLookupException;
 import com.socialreader.core.Profile;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  *
@@ -86,12 +89,13 @@ public class EmailResolver {
     
     public static void main(String[] args){
         try{
-            Profile profile = Profile.getDummy();
-            ArrayList<String> personalEmails = new ArrayList<String>();
-            EmailResolver er = new EmailResolver(profile);
-            personalEmails = er.getPersonalEmails();
+            Set<String> personalEmails = Stream.of(
+                    "cbaumann@wearedesignstudio.com",
+                    "maksim_prabarshchu12@epam.com",
+                    "maksim_prabarshchuk@xfd.com"
+            ).collect(Collectors.toSet());
             for(String email: personalEmails){
-                if (IsEMail.is_email(email)) {
+                if (IsEMail.is_email(email, true)) {
                     System.out.println(email + " is a valid email address");
                 } else {
                     System.out.println(email + " is NOT a valid email address");
