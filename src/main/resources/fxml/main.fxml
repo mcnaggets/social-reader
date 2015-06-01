@@ -12,7 +12,7 @@
                 <VBox AnchorPane.bottomAnchor="0.0"
                       AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <HBox>
-                        <FlowPane alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                        <VBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
                             <!--<HBox>-->
                                 <!--<Label text="First Name:"/>-->
                                 <!--<TextField fx:id="firstName"/>-->
@@ -23,7 +23,7 @@
                             <!--</HBox>-->
                             <HBox>
                                 <Label text="Job Titles:"/>
-                                <TextField fx:id="jobTitles"/>
+                                <TextField fx:id="jobTitles" HBox.hgrow="ALWAYS"/>
                             </HBox>
                             <!--<HBox>
                                 <Label text="Companies:"/>
@@ -35,21 +35,21 @@
                             </HBox>-->
                             <HBox>
                                 <Label text="Locations:"/>
-                                <TextField fx:id="locations"/>
+                                <TextField fx:id="locations" HBox.hgrow="ALWAYS"/>
                             </HBox>
                             <HBox>
                                 <Label text="Industries:"/>
-                                <TextField fx:id="industries"/>
+                                <TextField fx:id="industries" HBox.hgrow="ALWAYS"/>
                             </HBox>
                             <HBox>
                                 <Label text="Keywords:"/>
-                                <TextField fx:id="keywords"/>
+                                <TextField fx:id="keywords" HBox.hgrow="ALWAYS"/>
                             </HBox>
-                        </FlowPane>
-                        <VBox alignment="TOP_RIGHT">
-                            <Button onAction="#search" text="Search"/>
-                            <Button onAction="#google" text="Google"/>
-                            <Button onAction="#export" text="CSV Export"/>
+                            <HBox spacing="10" alignment="TOP_RIGHT">
+                                <Button onAction="#search" text="Search"/>
+                                <Button onAction="#google" text="Google"/>
+                                <Button onAction="#export" text="CSV Export"/>
+                            </HBox>
                         </VBox>
                     </HBox>
 

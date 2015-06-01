@@ -28,6 +28,8 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class MainController implements Initializable {
 
@@ -164,18 +166,22 @@ public class MainController implements Initializable {
 //            reader.getSchools().add(schools.getText());
 //        }
         if (!jobTitles.getText().isEmpty()) {
-            reader.getTitles().add(jobTitles.getText());
+            reader.getTitles().addAll(splitString(jobTitles));
         }
         if (!locations.getText().isEmpty()) {
-            reader.getLocations().add(locations.getText());
+            reader.getLocations().addAll(splitString(locations));
         }
         if (!industries.getText().isEmpty()) {
-            reader.getIndustries().add(industries.getText());
+            reader.getIndustries().addAll(splitString(industries));
         }
         if (!keywords.getText().isEmpty()) {
-            reader.getKeyWords().add(keywords.getText());
+            reader.getKeyWords().addAll(splitString(keywords));
         }
         return reader;
+    }
+
+    private Set<String> splitString(TextField multiValue) {
+        return Stream.of(multiValue.getText().split(",")).map(String::trim).collect(Collectors.toSet());
     }
 
     public static void openWebPage(URI uri) {

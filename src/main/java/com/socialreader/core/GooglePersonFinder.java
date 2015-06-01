@@ -1,16 +1,12 @@
 package com.socialreader.core;
 
-import com.google.gson.Gson;
 import com.socialreader.input.InputReader;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.InetAddress;
-import java.net.URL;
-import java.net.URLConnection;
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.HashSet;
 import java.util.List;
@@ -23,13 +19,9 @@ import java.util.stream.Collectors;
  */
 public class GooglePersonFinder {
 
-    public static final int SEARCH_PAGE_SIZE = 3; // 1..8
-    public static final int SEARCH_PAGES = 6;
-    public static final int MAX_RESULTS = SEARCH_PAGES * SEARCH_PAGE_SIZE;
-
     public static final String SEARCH_QUERY = "site:linkedin.com/in/ OR site:linkedin.com/pub/ -site:linkedin.com/pub/dir/";
     private static final Logger LOGGER = LoggerFactory.getLogger(GooglePersonFinder.class);
-    public static final String GOOGLE_SEARCH_QUERY = "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&rsz=%s&start=%s&q=";
+    public static final int PEOPLE_TO_FIND = 50;
 
     private StringBuilder searchQuery = new StringBuilder();
     private InputReader inputReader;
@@ -109,142 +101,26 @@ public class GooglePersonFinder {
     }
 
     public Set<ProfileBuilder> generateProfileBuilders() {
-        return doGoogleSearch();
-    }
-
-    private Set<ProfileBuilder> doGoogleSearch() {
-        Set<ProfileBuilder> profileBuilders = new HashSet<ProfileBuilder>();
-        try {
-            for (int resultIndex = 0; resultIndex < MAX_RESULTS; resultIndex += SEARCH_PAGE_SIZE) {
-                String searchAddress = String.format(GOOGLE_SEARCH_QUERY, SEARCH_PAGE_SIZE, resultIndex);
-                URL url = new URL(searchAddress + URLEncoder.encode(getSearchQuery(), "UTF-8"));
-                Reader reader = new InputStreamReader(url.openStream(), "UTF-8");
-                GoogleResults googleResults = new Gson().fromJson(reader, GoogleResults.class);
-                GoogleResults.ResponseData responseData = googleResults.getResponseData();
-                if (responseData != null) {
-                    List<GoogleResults.Result> resultsList = responseData.getResults();
-                    if (resultsList.isEmpty()) {
-                        return profileBuilders;
-                    }
-                    for (GoogleResults.Result aResultsList : resultsList) {
-                        String linkedInUrl = aResultsList.getUrl();
-                        ProfileBuilder profileBuilder = new ProfileBuilder(linkedInUrl);
-                        profileBuilders.add(profileBuilder);
-                    }
-                }
-            }
-        } catch (Exception x) {
-            LOGGER.error("Error while searching in google", x);
-        }
-        return profileBuilders;
+        return getDataFromGoogle(getSearchQuery()).stream().map(ProfileBuilder::new).collect(Collectors.toSet());
     }
 
     private Set<String> getDataFromGoogle(String query) {
-
-        Set<String> result = new HashSet<String>();
-        String request = "https://www.google.com/search?q=" + query + "&num=20";
-        System.out.println("Sending request..." + request);
-
+        Set<String> result = new HashSet<>();
         try {
-
+            String request = String.format("https://www.google.com/search?q=%s&num=%s", URLEncoder.encode(query, "UTF-8"), PEOPLE_TO_FIND);
+            LOGGER.debug("Sending request..." + request);
             // need http protocol, set this as a Google bot agent :)
-            Document doc = Jsoup
-                    .connect(request)
-                    .userAgent(
-                            "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)")
-                    .timeout(5000).get();
-
-            // get all links
-            Elements links = doc.select("a[href]");
-            for (Element link : links) {
-
-                String temp = link.attr("href");
-                if(temp.startsWith("/url?q=")){
-                    //use regex to get domain name
-                    result.add(getDomainName(temp));
-                }
-
-            }
-
+            return Jsoup.connect(request)
+                    .userAgent("Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)")
+                    .timeout(10000).get().select("cite").stream().map(Element::html).collect(Collectors.toSet());
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Error while google", e);
         }
-
         return result;
     }
 
     public static void main(String[] args) throws Exception {
-
-        URL url = new URL("http://ajax.googleapis.com/ajax/services/search/web?v=1.0&rsz=8&start=0" +
-                "&q=%22Director+*+*+Present%22+%22Industry+*+Design%22+%22Location+*+Hong+Kong%22+site%3Alinkedin.com%2Fin%2F+OR+site%3Alinkedin.com%2Fpub%2F+-site%3Alinkedin.com%2Fpub%2Fdir%2F" +
-                "&userip=" + InetAddress.getLocalHost());
-        URLConnection connection = url.openConnection();
-        connection.addRequestProperty("Referer", "http://linkedin.com");
-
-        String line;
-        StringBuilder builder = new StringBuilder();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-        while((line = reader.readLine()) != null) {
-            builder.append(line);
-        }
-        System.out.println(builder);
-    }
-}
-
-class GoogleResults {
-
-    private ResponseData responseData;
-
-    public ResponseData getResponseData() {
-        return responseData;
+        new GooglePersonFinder().getDataFromGoogle("\"CEO * * Present\" OR \"President * * Present\" OR \"owner * * Present\" OR \"CFO * * Present\" \"Restaurants\" OR \"Food & Beverages\" \"Greater Los Angeles Area\" site:linkedin.com/in/ OR site:linkedin.com/pub/ -site:linkedin.com/pub/dir/").forEach(System.out::println);
     }
 
-    public void setResponseData(ResponseData responseData) {
-        this.responseData = responseData;
-    }
-
-    public String toString() {
-        return "ResponseData[" + responseData + "]";
-    }
-
-    static class ResponseData {
-        private List<Result> results;
-
-        public List<Result> getResults() {
-            return results;
-        }
-
-        public void setResults(List<Result> results) {
-            this.results = results;
-        }
-
-        public String toString() {
-            return "Results[" + results + "]";
-        }
-    }
-
-    static class Result {
-        private String url;
-        private String title;
-
-        public String getUrl() {
-            return url;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-
-        public void setUrl(String url) {
-            this.url = url;
-        }
-
-        public void setTitle(String title) {
-            this.title = title;
-        }
-
-        public String toString() {
-            return "Result[url:" + url + ",title:" + title + "]";
-        }
-    }
 }
