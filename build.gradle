@@ -16,9 +16,8 @@ dependencies {
 
     compile "ch.qos.logback:logback-classic:1.1.2"
 
-    compile 'com.google.code.gson:gson:2.3.1'
     compile 'org.jsoup:jsoup:1.8.2'
-    compile 'com.github.lite2073:email-validator:1.0'
+    compile 'org.apache.commons:commons-lang3:3.4'
 
 }
 

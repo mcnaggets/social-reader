@@ -51,8 +51,7 @@ public class ProfileBuilder {
 
     public void initEmailResolver() {
         emailResolver = new EmailResolver(profile);
-        emailResolver.getPersonalEmails();
-        emailResolver.getBusinessEmails();
+        profile.setBusinessEmail(emailResolver.getBusinessEmail());
     }
 
     public void enrichProfileWithEmailResolver() {

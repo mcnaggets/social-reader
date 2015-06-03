@@ -55,6 +55,7 @@ public class MainController implements Initializable {
     public TableColumn<Profile, String> industry;
 
     public ProgressIndicator progressIndicator;
+    public CheckBox pingEmail;
     private List<Profile> profiles = new LinkedList<>();
 
     @Override
@@ -147,7 +148,9 @@ public class MainController implements Initializable {
                     try {
                         profileBuilder.initWebsiteScrapers();
                         profileBuilder.generateProfileFromWebsiteScrapers();
-                        //profileBuilder.initEmailResolver();
+                        if (pingEmail.isSelected()) {
+                            profileBuilder.initEmailResolver();
+                        }
                         //profileBuilder.enrichProfileWithEmailResolver();
                         return Optional.of(profileBuilder.getProfile());
                     } catch (Exception x) {
@@ -162,14 +165,6 @@ public class MainController implements Initializable {
 
     private InputReader getInputReader() {
         final InputReader reader = new InputReader(Integer.valueOf(maxResults.getValue()));
-//        reader.setFirstName(firstName.getText());
-//        reader.setLastName(lastName.getText());
-//        if (!companies.getText().isEmpty()) {
-//            reader.getCompanies().add(companies.getText());
-//        }
-//        if (!schools.getText().isEmpty()) {
-//            reader.getSchools().add(schools.getText());
-//        }
         if (!jobTitles.getText().isEmpty()) {
             reader.getTitles().addAll(splitString(jobTitles));
         }

@@ -1,6 +1,7 @@
 package com.socialreader.core;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -23,9 +24,8 @@ public class Profile {
     private String phone1 = null;
     private String phone2 = null;
     private String phone3 = null;
-    private String email1 = null;
-    private String email2 = null;
-    private String email3 = null;
+    private String businessEmail = null;
+    private String personalEmail = null;
 
     public Profile() {
     }
@@ -80,18 +80,6 @@ public class Profile {
 
     public String getPhone3() {
         return phone3;
-    }
-
-    public String getEmail1() {
-        return email1;
-    }
-
-    public String getEmail2() {
-        return email2;
-    }
-
-    public String getEmail3() {
-        return email3;
     }
 
     public String getLinkedInUrl() {
@@ -151,30 +139,18 @@ public class Profile {
         this.phone3 = phone3;
     }
 
-    public void setEmail1(String email1) {
-        this.email1 = email1;
-    }
-
-    public void setEmail2(String email2) {
-        this.email2 = email2;
-    }
-
-    public void setEmail3(String email3) {
-        this.email3 = email3;
-    }
-
     public void setLinkedInUrl(String linkedInUrl) {
         this.linkedInUrl = linkedInUrl;
     }
 
     public static String getHeader() {
         return "LinkedIn;First Name;Middle Name;Last Name;Title;Company;Education;Location;"
-                + "Industry;E-Mail 1;E-Mail 2;E-Mail 3;Phone 1;Phone 2;Phone 3";
+                + "Industry;Business Email;Personal Email;E-Mail 3;Phone 1;Phone 2;Phone 3";
     }
 
     public String toString() {
         return linkedInUrl + ";" + firstName + ";" + middleName + ";" + lastName + ";" + title + ";" + currentEmployer + ";" + education + ";"
-                + location + ";" + industry + ";" + email1 + ";" + email2 + ";" + email3 + ";" + phone1 + ";" + phone2 + ";" + phone3;
+                + location + ";" + industry + ";" + businessEmail + ";" + personalEmail + ";" + phone1 + ";" + phone2 + ";" + phone3;
     }
 
     public static Profile getDummy() {
@@ -191,9 +167,6 @@ public class Profile {
         profile.location = "Greater Los Angeles Area";
         profile.industry = "Investment Management";
         profile.setUsernames(usernames);
-        profile.email1 = "bpask1337@gmail.com";
-        profile.email2 = "bhp212@lehigh.edu";
-        profile.email3 = null;
         profile.phone1 = "609-731-8820";
         profile.phone2 = "609-918-1907";
         profile.phone3 = null;
@@ -291,19 +264,30 @@ public class Profile {
     }
 
     private static Profile mergeEmails(Profile merged, Profile first, Profile second) {
-        merged.email1 = first.email1;
-        merged.email2 = first.email2;
-        merged.email3 = first.email3;
-        if (first.email1 == null) {
-            merged.email1 = second.email1;
+        merged.businessEmail = first.businessEmail;
+        merged.personalEmail = first.personalEmail;
+        if (first.businessEmail == null) {
+            merged.businessEmail = second.businessEmail;
         }
-        if (first.email2 == null) {
-            merged.email2 = second.email2;
-        }
-        if (first.email3 == null) {
-            merged.email3 = second.email3;
+        if (first.personalEmail == null) {
+            merged.personalEmail = second.personalEmail;
         }
         return merged;
     }
 
+    public String getBusinessEmail() {
+        return businessEmail;
+    }
+
+    public void setBusinessEmail(String businessEmail) {
+        this.businessEmail = businessEmail;
+    }
+
+    public String getPersonalEmail() {
+        return personalEmail;
+    }
+
+    public void setPersonalEmail(String personalEmail) {
+        this.personalEmail = personalEmail;
+    }
 }

@@ -63,6 +63,7 @@
                                         </FXCollections>
                                     </items>
                                 </ComboBox>
+                                <CheckBox text="Ping Email" fx:id="pingEmail"/>
                             </HBox>
                         </VBox>
                     </HBox>
