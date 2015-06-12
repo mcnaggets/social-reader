@@ -27,7 +27,7 @@ public class GooglePersonFinder {
     private static final Logger LOGGER = LoggerFactory.getLogger(GooglePersonFinder.class);
 
     public static final String SEARCH_QUERY = "site:linkedin.com/in/ OR site:linkedin.com/pub/ -site:linkedin.com/pub/dir/";
-    public static final String GOOGLE_SEARCH_TEMPLATE = "https://www.google.com/search?gws_rd=cr&as_qdr=all&q=%s&num=%s";
+    public static final String GOOGLE_SEARCH_TEMPLATE = "https://www.google.com/search?gws_rd=cr&as_qdr=all&q=%s&start=%s&num=%s";
 
     private final StringBuilder searchQuery = new StringBuilder();
     private final InputReader inputReader;
@@ -133,7 +133,8 @@ public class GooglePersonFinder {
 
     private String searchQuery() {
         try {
-            return String.format(GOOGLE_SEARCH_TEMPLATE, encode(getSearchQuery(), "UTF-8"), inputReader.getMaxResults());
+            return String.format(GOOGLE_SEARCH_TEMPLATE, encode(getSearchQuery(), "UTF-8"),
+                    inputReader.getStart(),inputReader.getMaxResults());
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }

@@ -10,6 +10,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.text.Text;
@@ -55,8 +56,9 @@ public class MainController implements Initializable {
     public TableColumn<Profile, String> industry;
 
     public ProgressIndicator progressIndicator;
-    public CheckBox pingEmail;
+//    public CheckBox pingEmail;
     private List<Profile> profiles = new LinkedList<>();
+    private int start;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -89,6 +91,7 @@ public class MainController implements Initializable {
     }
 
     public void search() {
+        start = 0;
         service.restart();
     }
 
@@ -114,6 +117,11 @@ public class MainController implements Initializable {
     public void google() throws URISyntaxException, MalformedURLException, UnsupportedEncodingException {
         final GooglePersonFinder finder = new GooglePersonFinder(getInputReader());
         finder.openWebPage();
+    }
+
+    public void next() {
+        start += maxResults();
+        service.restart();
     }
 
     private class GetProfilesService extends Service<ObservableList<Profile>> {
@@ -148,9 +156,9 @@ public class MainController implements Initializable {
                     try {
                         profileBuilder.initWebsiteScrapers();
                         profileBuilder.generateProfileFromWebsiteScrapers();
-                        if (pingEmail.isSelected()) {
-                            profileBuilder.initEmailResolver();
-                        }
+//                        if (pingEmail.isSelected()) {
+//                            profileBuilder.initEmailResolver();
+//                        }C
                         //profileBuilder.enrichProfileWithEmailResolver();
                         return Optional.of(profileBuilder.getProfile());
                     } catch (Exception x) {
@@ -164,7 +172,7 @@ public class MainController implements Initializable {
     }
 
     private InputReader getInputReader() {
-        final InputReader reader = new InputReader(Integer.valueOf(maxResults.getValue()));
+        final InputReader reader = new InputReader(start(), maxResults());
         if (!jobTitles.getText().isEmpty()) {
             reader.getTitles().addAll(splitString(jobTitles));
         }
@@ -178,6 +186,18 @@ public class MainController implements Initializable {
             reader.getKeyWords().addAll(splitString(keywords));
         }
         return reader;
+    }
+
+    private int start() {
+        return start;
+    }
+
+    private Integer maxResults() {
+        try {
+            return Integer.valueOf(this.maxResults.getValue());
+        } catch (NumberFormatException ignored) {
+            return 10;
+        }
     }
 
     private Set<String> splitString(TextField multiValue) {

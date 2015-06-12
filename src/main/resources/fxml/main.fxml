@@ -48,10 +48,11 @@
                             </HBox>
                             <HBox spacing="10" alignment="CENTER">
                                 <Button onAction="#search" text="Search"/>
+                                <Button onAction="#next" text="Next page"/>
                                 <Button onAction="#google" text="Google"/>
                                 <Button onAction="#export" text="CSV Export"/>
                                 <Label text="Maximum search results:" prefWidth="140"/>
-                                <ComboBox fx:id="maxResults" promptText="choose" value="10">
+                                <ComboBox fx:id="maxResults" promptText="choose" value="10" editable="true">
                                     <items>
                                         <FXCollections fx:factory="observableArrayList">
                                             <String fx:value="5"/>
@@ -63,7 +64,6 @@
                                         </FXCollections>
                                     </items>
                                 </ComboBox>
-                                <CheckBox text="Ping Email" fx:id="pingEmail"/>
                             </HBox>
                         </VBox>
                     </HBox>

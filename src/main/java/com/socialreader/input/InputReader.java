@@ -8,6 +8,7 @@ import java.util.List;
  */
 public class InputReader {
 
+    private final int start;
     private final int maxResults;
     protected String firstName = "";
     protected String lastName = "";
@@ -18,8 +19,13 @@ public class InputReader {
     protected List<String> industries = new LinkedList<>();
     protected List<String> keyWords = new LinkedList<>();
 
-    public InputReader(int maxResults) {
+    public InputReader(int start, int maxResults) {
+        this.start = start;
         this.maxResults = maxResults;
+    }
+
+    public int getStart() {
+        return start;
     }
 
     public String getFirstName() {

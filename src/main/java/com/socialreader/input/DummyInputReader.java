@@ -8,7 +8,7 @@ import java.util.ArrayList;
 public class DummyInputReader extends InputReader{
     
     public DummyInputReader(){
-        super(10);
+        super(0, 10);
         locations = new ArrayList<>();
         locations.add("Greater Los Angeles Area");
         industries = new ArrayList<>();
