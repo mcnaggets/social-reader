@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.HashSet;
@@ -28,6 +27,7 @@ public class GooglePersonFinder {
 
     public static final String SEARCH_QUERY = "site:linkedin.com/in/ OR site:linkedin.com/pub/ -site:linkedin.com/pub/dir/";
     public static final String GOOGLE_SEARCH_TEMPLATE = "https://www.google.com/search?gws_rd=cr&as_qdr=all&q=%s&start=%s&num=%s";
+    public static final int PAGE_SIZE = 20;
 
     private final StringBuilder searchQuery = new StringBuilder();
     private final InputReader inputReader;
@@ -118,30 +118,39 @@ public class GooglePersonFinder {
     private Set<String> getDataFromGoogle() {
         Set<String> result = new HashSet<>();
         try {
-            String request = searchQuery();
-            LOGGER.debug("Sending request... {}", request);
-            // need http protocol, set this as a Google bot agent :)
-            final Document document = Jsoup.connect(request)
-                    .userAgent("Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)")
-                    .timeout(10000).get();
-            return document.select("cite").stream().map(Element::html).filter(c -> c.contains("linkedin")).collect(Collectors.toSet());
-        } catch (IOException e) {
+            int maxResults = inputReader.getMaxResults();
+            int toSearch = maxResults < PAGE_SIZE ? maxResults : PAGE_SIZE;
+            int start = inputReader.getStart();
+            while (result.size() < maxResults) {
+                String request = searchQuery(start, toSearch);
+                LOGGER.debug("Sending request... {}", request);
+                // need http protocol, set this as a Google bot agent :)
+                final Document document = Jsoup.connect(request)
+                        .userAgent("Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)")
+                        .timeout(10000).get();
+                Set<String> collect = document.select("cite").stream().map(Element::html).filter(c -> c.contains("linkedin")).collect(Collectors.toSet());
+                if (collect.isEmpty()) {
+                    return result;
+                }
+                result.addAll(collect);
+                start += PAGE_SIZE;
+            }
+        } catch (Exception e) {
             LOGGER.error("Error while google", e);
         }
         return result;
     }
 
-    private String searchQuery() {
+    private String searchQuery(int start, int maxResults) {
         try {
-            return String.format(GOOGLE_SEARCH_TEMPLATE, encode(getSearchQuery(), "UTF-8"),
-                    inputReader.getStart(),inputReader.getMaxResults());
+            return String.format(GOOGLE_SEARCH_TEMPLATE, encode(getSearchQuery(), "UTF-8"), start, maxResults);
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
     }
 
     public void openWebPage() {
-        openWebPage(searchQuery());
+        openWebPage(searchQuery(inputReader.getStart(), inputReader.getMaxResults()));
     }
 
     public static void openWebPage(String query) {
