@@ -27,7 +27,7 @@ public class GooglePersonFinder {
 
     public static final String SEARCH_QUERY = "site:linkedin.com/in/ OR site:linkedin.com/pub/ -site:linkedin.com/pub/dir/";
     public static final String GOOGLE_SEARCH_TEMPLATE = "https://www.google.com/search?gws_rd=cr&as_qdr=all&q=%s&start=%s&num=%s";
-    public static final int PAGE_SIZE = 20;
+    public static final int PAGE_SIZE = 100;
 
     private final StringBuilder searchQuery = new StringBuilder();
     private final InputReader inputReader;
@@ -126,13 +126,12 @@ public class GooglePersonFinder {
                 LOGGER.debug("Sending request... {}", request);
                 // need http protocol, set this as a Google bot agent :)
                 final Document document = Jsoup.connect(request)
-                        .userAgent("Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)")
-                        .timeout(10000).get();
+                        .userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36")
+                        .get();
                 Set<String> collect = document.select("cite").stream().map(Element::html).filter(c -> c.contains("linkedin")).collect(Collectors.toSet());
-                if (collect.isEmpty()) {
+                if (!result.addAll(collect)) {
                     return result;
                 }
-                result.addAll(collect);
                 start += PAGE_SIZE;
             }
         } catch (Exception e) {
