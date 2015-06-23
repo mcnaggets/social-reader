@@ -10,9 +10,10 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
@@ -56,7 +57,7 @@ public class MainController implements Initializable {
     public TableColumn<Profile, String> industry;
 
     public ProgressIndicator progressIndicator;
-//    public CheckBox pingEmail;
+    //    public CheckBox pingEmail;
     private List<Profile> profiles = new LinkedList<>();
     private int start;
 
@@ -65,7 +66,39 @@ public class MainController implements Initializable {
         LOGGER.debug("Controller initialing");
         bindService();
         initializeColumns();
+        initTable();
 
+        LOGGER.debug("Controller initialized");
+    }
+
+    private void initTable() {
+        peopleTable.getSelectionModel().setCellSelectionEnabled(true);
+        peopleTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        MenuItem item = new MenuItem("Copy");
+        item.setOnAction(event -> {
+            ObservableList<TablePosition> posList = peopleTable.getSelectionModel().getSelectedCells();
+            int old_r = -1;
+            StringBuilder clipboardString = new StringBuilder();
+            for (TablePosition p : posList) {
+                int r = p.getRow();
+                int c = p.getColumn();
+                Object cell = peopleTable.getColumns().get(c).getCellData(r);
+                if (cell == null)
+                    cell = "";
+                if (old_r == r)
+                    clipboardString.append('\t');
+                else if (old_r != -1)
+                    clipboardString.append('\n');
+                clipboardString.append(cell);
+                old_r = r;
+            }
+            final ClipboardContent content = new ClipboardContent();
+            content.putString(clipboardString.toString());
+            Clipboard.getSystemClipboard().setContent(content);
+        });
+        ContextMenu menu = new ContextMenu();
+        menu.getItems().add(item);
+        peopleTable.setContextMenu(menu);
         peopleTable.setRowFactory(tv -> {
             TableRow<Profile> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
@@ -76,8 +109,6 @@ public class MainController implements Initializable {
             });
             return row;
         });
-
-        LOGGER.debug("Controller initialized");
     }
 
     private void initializeColumns() {
